@@ -1,7 +1,9 @@
 import * as Yup from 'yup';
-import { startOfHour, parseISO, isBefore } from 'date-fns';
+import { startOfHour, parseISO, isBefore, format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 import User from '../models/User';
 import File from '../models/File';
+import Notification from '../schemas/Notification';
 import Appointment from '../models/Appointment';
 
 class AppointmentController {
@@ -59,6 +61,15 @@ class AppointmentController {
     }
 
     /**
+     * Check if user is trying to create an appointment to himself
+     */
+    if (provider_id === req.userId) {
+      return res
+        .status(401)
+        .json({ error: 'You cant create an appointment to yourself' });
+    }
+
+    /**
      * Check for Past Dates
      */
 
@@ -90,6 +101,19 @@ class AppointmentController {
       provider_id,
       date,
     });
+
+    /**
+     * Notificate User
+     */
+    const user = await User.findByPk(req.userId);
+    const formatedDate = format(hourStart, "'dia' d 'De' MMMM', as 'H:mm'h' ", {
+      locale: pt,
+    });
+    await Notification.create({
+      content: `Novo Agendamento de ${user.name} Para o ${formatedDate}`,
+      user: provider_id,
+    });
+
     return res.json(appointment);
   }
 }

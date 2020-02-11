@@ -30,6 +30,7 @@ class Mail {
           extname: '.hbs',
         }),
         viewPath,
+        extName: '.hbs',
       })
     );
   }

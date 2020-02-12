@@ -5,8 +5,7 @@ import User from '../models/User';
 import File from '../models/File';
 import Notification from '../schemas/Notification';
 import Appointment from '../models/Appointment';
-import CancellationMail from '../jobs/CancellationMail';
-import Queue from '../../lib/Queue';
+import Mail from '../../lib/Mail';
 
 class AppointmentController {
   async index(req, res) {
@@ -15,9 +14,9 @@ class AppointmentController {
     const appointments = await Appointment.findAll({
       where: { user_id: req.userId, canceled_at: null },
       order: ['date'],
-      attributes: ['id', 'date'],
+      attributes: ['id', 'date', 'past', 'cancelable'],
       limit: (page - 1) * 20,
-      offset: 0,
+      // offset: 0,
       include: [
         {
           model: User,
@@ -151,8 +150,18 @@ class AppointmentController {
     appointment.canceled_at = new Date();
 
     await appointment.save();
-    await Queue.add(CancellationMail.key, {
-      appointment,
+
+    await Mail.sendMail({
+      to: `${appointment.provider.name} <${appointment.provider.email}>`,
+      subject: 'Agendamento Cancelado',
+      template: 'cancelation',
+      context: {
+        provider: appointment.provider.name,
+        user: appointment.user.name,
+        date: format(appointment.date, "'dia' d 'De' MMMM', as 'H:mm'h' ", {
+          locale: pt,
+        }),
+      },
     });
 
     return res.json(appointment);

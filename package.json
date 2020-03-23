@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "dev:debug": "nodemon --inspect src/server.js",
-    "queue": "nodemon src/queue.js"
+    "queue": "nodemon src/queue.js",
+    "start": "node src/server.js"
   },
   "dependencies": {
     "@sentry/node": "5.12.2",

@@ -49,6 +49,7 @@ class AvailableController {
         setMinutes(setHours(searchDate, hour), minute),
         0
       );
+
       return {
         time,
         value: format(value, "yyyy-MM-dd'T'HH:mm:ssxxx"),
